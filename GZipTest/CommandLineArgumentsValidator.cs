@@ -24,15 +24,22 @@ namespace GZipTest
                 return ParseResult.Error(ValidationResult.UnknownMode);
             }
 
-            var sourcePathValidationResult = TryGetFilePath(args[1], FileMode.Open, out var sourceFullPath);
-            if (sourcePathValidationResult != ValidationResult.Success)
+            var sourceValidationResult = CheckFileByPath(args[1], FileMode.Open, out var sourceFullPath);
+            if (sourceValidationResult != ValidationResult.Success)
             {
-                return ParseResult.Error(sourcePathValidationResult == ValidationResult.FileNotFound
+                return ParseResult.Error(sourceValidationResult == ValidationResult.PathNotFound
                     ? ValidationResult.SourceNotExists
-                    : sourcePathValidationResult);
+                    : sourceValidationResult);
+            }
+
+            var destinationValidationResult = CheckFileByPath(args[2], FileMode.CreateNew, out var destinationFullPath);
+            if (destinationValidationResult != ValidationResult.Success)
+            {
+                return ParseResult.Error(destinationValidationResult);
             }
             
-            return ParseResult.Successful(new TaskParameters(mode, sourceFullPath));
+            File.Delete(destinationFullPath);
+            return ParseResult.Successful(new TaskParameters(mode, sourceFullPath, destinationFullPath));
         }
 
         private bool TryParseProcessorMode(string value, out ProcessorMode mode)
@@ -53,7 +60,7 @@ namespace GZipTest
             return false;
         }
 
-        private ValidationResult TryGetFilePath(string value, FileMode mode, out string fullPath)
+        private ValidationResult CheckFileByPath(string value, FileMode mode, out string fullPath)
         {
             fullPath = string.Empty;
             try
@@ -78,7 +85,12 @@ namespace GZipTest
             catch (Exception ex) when (ex is DirectoryNotFoundException ||
                                        ex is FileNotFoundException)
             {
-                return ValidationResult.FileNotFound;
+                return ValidationResult.PathNotFound;
+            }
+            catch (IOException)
+            {
+                // thrown when Open existing file with CreateNew
+                return ValidationResult.PathAlreadyExists;
             }
         }
     }
