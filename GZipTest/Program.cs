@@ -2,11 +2,20 @@
 
 namespace GZipTest
 {
-    class Program
+    public static class Program
     {
-        static void Main(string[] args)
+        public static int Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            var validator = new CommandLineArgumentsValidator();
+            var validationResult = validator.Validate(args);
+            
+            if (validationResult.ValidationError != ValidationError.Success)
+            {
+                Console.WriteLine(ValidationErrorMessageProvider.GetErrorMessage(validationResult));
+                return 1;
+            }
+            
+            return 0;
         }
     }
 }
