@@ -4,6 +4,7 @@ namespace GZipTest
     {
         Success,
         TooManyArguments,
-        TooFewArguments
+        TooFewArguments,
+        UnknownMode
     }
 }
