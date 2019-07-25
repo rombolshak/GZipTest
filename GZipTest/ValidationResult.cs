@@ -5,6 +5,10 @@ namespace GZipTest
         Success,
         TooManyArguments,
         TooFewArguments,
-        UnknownMode
+        UnknownMode,
+        SourceNotExists,
+        PathIsIncorrect,
+        SecurityViolation,
+        FileNotFound
     }
 }
