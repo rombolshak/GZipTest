@@ -15,17 +15,21 @@ namespace GZipTest.Tests
 
             pipe.Read();
             Assert.True(readGuard.IsLocked);
+            Assert.False(writeGuard.IsLocked);
 
-            pipe.Write();
+            pipe.Write(new Chunk());
             Assert.False(readGuard.IsLocked);
+            Assert.False(writeGuard.IsLocked);
             
-            pipe.Write(); 
-            pipe.Write(); // maxElements reached
-            pipe.Write();
+            pipe.Write(new Chunk()); 
+            pipe.Write(new Chunk()); // maxElements reached
+            pipe.Write(new Chunk());
             Assert.True(writeGuard.IsLocked);
+            Assert.False(readGuard.IsLocked);
             
             pipe.Read();
             Assert.False(writeGuard.IsLocked);
+            Assert.False(readGuard.IsLocked);
         }
         
         private class SemaphoreMock : ISemaphore

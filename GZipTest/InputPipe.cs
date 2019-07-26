@@ -1,6 +1,6 @@
 namespace GZipTest
 {
-    public class InputPipe<T> where T: ISemaphore
+    public class InputPipe<T>: IPipe where T: ISemaphore
     {
         public InputPipe(T readGuard, T writeGuard)
         {
@@ -8,13 +8,14 @@ namespace GZipTest
             _writeGuard = writeGuard;
         }
         
-        public void Read()
+        public Chunk Read()
         {
             _readGuard.Wait();
             _writeGuard.Release();
+            return null;
         }
 
-        public void Write()
+        public void Write(Chunk chunk)
         {
             _writeGuard.Wait();
             _readGuard.Release();
