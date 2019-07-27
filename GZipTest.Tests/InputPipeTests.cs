@@ -1,3 +1,4 @@
+using System.Threading;
 using Xunit;
 
 namespace GZipTest.Tests
@@ -12,46 +13,59 @@ namespace GZipTest.Tests
             var writeGuard = new SemaphoreMock(maxElements);
             
             var pipe = new InputPipe<SemaphoreMock>(readGuard, writeGuard);
+            pipe.Open();
 
-            pipe.Read();
+            new Thread(() => pipe.Read()).Start();
+            Thread.Sleep(200);
             Assert.True(readGuard.IsLocked);
             Assert.False(writeGuard.IsLocked);
 
             pipe.Write(new Chunk());
+            Thread.Sleep(200);
             Assert.False(readGuard.IsLocked);
             Assert.False(writeGuard.IsLocked);
             
             pipe.Write(new Chunk()); 
             pipe.Write(new Chunk()); // maxElements reached
-            pipe.Write(new Chunk());
+            
+            new Thread(() => pipe.Write(new Chunk())).Start();
+            Thread.Sleep(200);
             Assert.True(writeGuard.IsLocked);
             Assert.False(readGuard.IsLocked);
             
             pipe.Read();
+            Thread.Sleep(200);
             Assert.False(writeGuard.IsLocked);
             Assert.False(readGuard.IsLocked);
+
+            pipe.Close();
+            pipe.Read();
+            pipe.Read();
+            Assert.Throws<PipeClosedException>(() => pipe.Read());
         }
         
         private class SemaphoreMock : ISemaphore
         {
             public SemaphoreMock(int initialCount)
             {
-                _count = initialCount;
+                _semaphore = new SemaphoreSlim(initialCount);
             }
+
+            public bool IsLocked { get; private set; }
             
-            public bool IsLocked => _count < 0;
-            
-            public void Wait()
+            public void Wait(int timeout)
             {
-                _count--;
+                IsLocked = true;
+                _semaphore.Wait(timeout);
+                IsLocked = false;
             }
 
             public void Release()
             {
-                _count++;
+                _semaphore.Release();
             }
-            
-            private int _count;
+
+            private readonly SemaphoreSlim _semaphore;
         }
     }
 }

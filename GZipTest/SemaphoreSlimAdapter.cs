@@ -9,9 +9,9 @@ namespace GZipTest
             _adaptee = new SemaphoreSlim(initialCount, maxCount);
         }
         
-        public void Wait()
+        public void Wait(int millisecondsTimeout)
         {
-            _adaptee.Wait();
+            _adaptee.Wait(millisecondsTimeout);
         }
 
         public void Release()

@@ -46,11 +46,15 @@ namespace GZipTest.Tests
             Assert.Equal(2, pipe.Chunks.Count);
             Assert.Equal(8, pipe.Chunks[0].Bytes.Length);
             Assert.Equal(3, pipe.Chunks[1].Bytes.Length);
+            Assert.Equal(1, pipe.Chunks[1].Index);
+            Assert.True(pipe.WasClosed);
         }
         
         private class PipeMock : IPipe
         {
             public List<Chunk> Chunks { get; } = new List<Chunk>();
+            
+            public bool WasClosed { get; private set; }
             
             public Chunk Read()
             {
@@ -60,6 +64,15 @@ namespace GZipTest.Tests
             public void Write(Chunk chunk)
             {
                 Chunks.Add(chunk);
+            }
+
+            public void Open()
+            {
+            }
+
+            public void Close()
+            {
+                WasClosed = true;
             }
         }
     }

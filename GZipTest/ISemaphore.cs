@@ -2,7 +2,7 @@ namespace GZipTest
 {
     public interface ISemaphore
     {
-        void Wait();
+        void Wait(int millisecondsTimeout);
         void Release();
     }
 }

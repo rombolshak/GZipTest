@@ -4,5 +4,7 @@ namespace GZipTest
     {
         Chunk Read();
         void Write(Chunk chunk);
+        void Open();
+        void Close();
     }
 }
