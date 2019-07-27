@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Xunit;
 
 namespace GZipTest.Tests
@@ -64,6 +66,24 @@ namespace GZipTest.Tests
             
             Assert.Equal(bytes, stream.ToArray());
         }
+
+        [Fact]
+        public void TestChunksLengthsWriting()
+        {
+            var bytes = BitConverter.GetBytes(3).Concat(new byte[] { 0x00, 0x11, 0x22 })
+                .Concat(BitConverter.GetBytes(4)).Concat(new byte[] { 0x33, 0x44, 0x55, 0x66 })
+                .ToArray();
+            var pipe = new PipeMock(new[]
+            {
+                new Chunk { Bytes =  new byte[] { 0x00, 0x11, 0x22 }, Index = 0 },
+                new Chunk { Bytes =  new byte[] { 0x33, 0x44, 0x55, 0x66 }, Index = 1 }
+            });
+            var stream = new MemoryStream();
+            var writer = new ChunksWriter(pipe);
+            writer.WriteToStream(stream, writeChunksLengths: true);
+            
+            Assert.Equal(bytes, stream.ToArray());
+        }
         
         private class PipeMock : IPipe
         {
@@ -79,17 +99,17 @@ namespace GZipTest.Tests
 
             public void Write(Chunk chunk)
             {
-                throw new System.NotSupportedException();
+                throw new NotSupportedException();
             }
 
             public void Open()
             {
-                throw new System.NotSupportedException();
+                throw new NotSupportedException();
             }
 
             public void Close()
             {
-                throw new System.NotSupportedException();
+                throw new NotSupportedException();
             }
             
             private readonly Queue<Chunk> _chunks;

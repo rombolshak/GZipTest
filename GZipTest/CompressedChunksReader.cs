@@ -14,14 +14,14 @@ namespace GZipTest
         public void ReadFromStream(Stream inputStream)
         {
             _pipe.Open();
-            var lengthBuffer = new byte[4];
+            var lengthBuffer = new byte[sizeof(int)];
             var buffer = new byte[0];
             var maxChunkLength = 0;
             var index = 0;
             int bytesRead;
-            while ((bytesRead = inputStream.Read(lengthBuffer, 0, 4)) > 0)
+            while ((bytesRead = inputStream.Read(lengthBuffer, 0, lengthBuffer.Length)) > 0)
             {
-                if (bytesRead < 4)
+                if (bytesRead < lengthBuffer.Length)
                 {
                     throw new FileCorruptedException();
                 }

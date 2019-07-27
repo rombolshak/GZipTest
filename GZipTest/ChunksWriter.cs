@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -11,7 +12,7 @@ namespace GZipTest
             _pipe = pipe;
         }
 
-        public void WriteToStream(Stream outputStream)
+        public void WriteToStream(Stream outputStream, bool writeChunksLengths = false)
         {
             var index = 0;
             var unorderedChunks = new List<Chunk>();
@@ -32,13 +33,13 @@ namespace GZipTest
                         chunk = found;
                     }
                     
-                    outputStream.Write(chunk.Bytes, 0, chunk.Bytes.Length);
+                    WriteChunk(outputStream, chunk, writeChunksLengths);
                 }
                 catch (PipeClosedException)
                 {
                     foreach (var chunk in unorderedChunks.OrderBy(c => c.Index))
                     {
-                        outputStream.Write(chunk.Bytes, 0, chunk.Bytes.Length);
+                        WriteChunk(outputStream, chunk, writeChunksLengths);
                     }
                     
                     outputStream.Flush();
@@ -46,7 +47,17 @@ namespace GZipTest
                 }
             }
         }
-        
+
+        private static void WriteChunk(Stream outputStream, Chunk chunk, bool writeChunksLengths)
+        {
+            if (writeChunksLengths)
+            {
+                outputStream.Write(BitConverter.GetBytes(chunk.Bytes.Length), 0,  sizeof(int));
+            }
+            
+            outputStream.Write(chunk.Bytes, 0, chunk.Bytes.Length);
+        }
+
         private readonly IPipe _pipe;
     }
 }
