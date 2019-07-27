@@ -3,7 +3,7 @@ using Xunit;
 
 namespace GZipTest.Tests
 {
-    public class InputPipeTests
+    public class PipeTests
     {
         [Fact]
         public void TestPipeWorkflow()

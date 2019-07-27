@@ -29,6 +29,7 @@ namespace GZipTest
         public void Open()
         {
             Interlocked.Increment(ref _registeredWriters);
+            _wasEverOpened = true;
         }
 
         public void Close()
@@ -43,7 +44,7 @@ namespace GZipTest
                 _readGuard.Wait(millisecondsTimeout: 500);
                 if (_queue.Count == 0)
                 {
-                    if (_registeredWriters == 0)
+                    if (_registeredWriters == 0 && _wasEverOpened)
                     {
                         throw new PipeClosedException();
                     }
@@ -59,15 +60,19 @@ namespace GZipTest
         private readonly T _readGuard;
         private readonly T _writeGuard;
         private int _registeredWriters = 0;
+        private bool _wasEverOpened;
     }
 
     public class PipeClosedException : Exception
     {
     }
 
-    public class InputPipe : InputPipe<SemaphoreSlimAdapter>
+    public class Pipe : InputPipe<SemaphoreSlimAdapter>
     {
-        public InputPipe(SemaphoreSlimAdapter readGuard, SemaphoreSlimAdapter writeGuard) : base(readGuard, writeGuard)
+        public Pipe(int maxElements) 
+            : base(
+                readGuard: new SemaphoreSlimAdapter(0, maxElements), 
+                writeGuard: new SemaphoreSlimAdapter(maxElements, maxElements))
         {
         }
     }
