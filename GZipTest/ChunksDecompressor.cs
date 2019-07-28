@@ -29,6 +29,7 @@ namespace GZipTest
                     var processedBytes = processedStream.ToArray();
                     _outputPipe.Write(new Chunk { Bytes = processedBytes, Index = chunk.Index });
                     processedStream.Position = 0;
+                    processedStream.SetLength(0);
                     _logger.Write(
                         $"Decompressed chunk #{chunk.Index} from {chunk.Bytes.Length} bytes to {processedBytes.Length}");
                 }
