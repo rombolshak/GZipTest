@@ -74,5 +74,20 @@ namespace GZipTest.Tests
             
             Assert.True(task.IsErrorOccured);
         }
+
+        [Fact]
+        public void TestTaskAbortion()
+        {
+            var text = string.Concat(Enumerable.Repeat("Test test test, ho ho ho. ", 200500));
+            const string compressedTxt = "compressed.txt";
+            File.WriteAllText("in.txt", text);
+            var parameters = new TaskParameters(ProcessorMode.Compress, "in.txt", compressedTxt);
+            var processor = new TaskProcessor(new LoggerMock());
+            var task = processor.Start(parameters);
+            
+            task.Abort();
+            task.Wait();
+            Assert.True(task.IsErrorOccured);
+        }
     }
 }

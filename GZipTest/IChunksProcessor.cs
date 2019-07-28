@@ -1,7 +1,9 @@
+using System.Threading;
+
 namespace GZipTest
 {
     public interface IChunksProcessor
     {
-        void Start();
+        void Start(CancellationToken token);
     }
 }

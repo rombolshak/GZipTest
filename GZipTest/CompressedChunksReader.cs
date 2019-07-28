@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 
 namespace GZipTest
 {
@@ -12,7 +13,7 @@ namespace GZipTest
             _logger = logger;
         }
 
-        public void ReadFromStream(Stream inputStream)
+        public void ReadFromStream(Stream inputStream, CancellationToken token)
         {
             _pipe.Open();
             var lengthBuffer = new byte[sizeof(int)];
@@ -23,7 +24,8 @@ namespace GZipTest
 
             try
             {
-                while ((bytesRead = inputStream.Read(lengthBuffer, 0, lengthBuffer.Length)) > 0)
+                while (!token.IsCancellationRequested &&
+                       (bytesRead = inputStream.Read(lengthBuffer, 0, lengthBuffer.Length)) > 0)
                 {
                     if (bytesRead < lengthBuffer.Length)
                     {

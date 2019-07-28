@@ -14,15 +14,21 @@ namespace GZipTest
         public Chunk Read()
         {
             AcquireReadLock();
-            var chunk = _queue.Dequeue();
             _writeGuard.Release();
-            return chunk;
+            lock (_queue)
+            {
+                return _queue.Dequeue();
+            }
         }
 
         public void Write(Chunk chunk)
         {
             _writeGuard.Wait(millisecondsTimeout: int.MaxValue);
-            _queue.Enqueue(chunk);
+            lock (_queue)
+            {
+                _queue.Enqueue(chunk);
+            }
+            
             _readGuard.Release();
         }
 
@@ -42,14 +48,17 @@ namespace GZipTest
             while (true)
             {
                 _readGuard.Wait(millisecondsTimeout: 500);
-                if (_queue.Count == 0)
+                lock (_queue)
                 {
-                    if (_registeredWriters == 0 && _wasEverOpened)
+                    if (_queue.Count == 0)
                     {
-                        throw new PipeClosedException();
-                    }
+                        if (_registeredWriters == 0 && _wasEverOpened)
+                        {
+                            throw new PipeClosedException();
+                        }
 
-                    continue;
+                        continue;
+                    }
                 }
 
                 break;

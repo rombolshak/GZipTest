@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Threading;
 
 namespace GZipTest
 {
@@ -13,11 +14,11 @@ namespace GZipTest
             _logger = logger;
         }
         
-        public void Start()
+        public void Start(CancellationToken token)
         {
             _outputPipe.Open();
             var processedStream = new MemoryStream();
-            while (true)
+            while (!token.IsCancellationRequested)
             {
                 try
                 {
@@ -37,7 +38,6 @@ namespace GZipTest
                 catch (PipeClosedException)
                 {
                     _logger.Write("Compressing complete");
-                    _outputPipe.Close();
                     break;
                 }
                 catch (Exception e)
@@ -47,6 +47,8 @@ namespace GZipTest
                     throw;
                 }
             }
+            
+            _outputPipe.Close();
         }
         
         private readonly IPipe _inputPipe;

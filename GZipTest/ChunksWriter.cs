@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace GZipTest
 {
@@ -13,11 +14,11 @@ namespace GZipTest
             _logger = logger;
         }
 
-        public void WriteToStream(Stream outputStream, bool writeChunksLengths = false)
+        public void WriteToStream(Stream outputStream, CancellationToken token, bool writeChunksLengths = false)
         {
             var index = 0;
             var unorderedChunks = new List<Chunk>();
-            while (true)
+            while (!token.IsCancellationRequested)
             {
                 try
                 {
@@ -26,35 +27,26 @@ namespace GZipTest
                     if (chunk.Index != index)
                     {
                         unorderedChunks.Add(chunk);
-                        var found = unorderedChunks.FirstOrDefault(c => c.Index == index);
-                        if (found == null)
-                        {
-                            _logger.Write("Chunk order is incorrect, waiting next");
-                            continue;
-                        }
-
-                        _logger.Write($"Found chunk #{index} in queue, writing");
-                        chunk = found;
-                        unorderedChunks.Remove(found);
+                        continue;
                     }
 
-                    WriteChunk(outputStream, chunk, writeChunksLengths);
+                    WriteChunk(outputStream, chunk, token, writeChunksLengths);
                     index++;
                     while ((chunk = unorderedChunks.FirstOrDefault(c => c.Index == index)) != null)
                     {
                         unorderedChunks.Remove(chunk);
-                        WriteChunk(outputStream, chunk, writeChunksLengths);
+                        WriteChunk(outputStream, chunk, token, writeChunksLengths);
                         index++;
                     }
                 }
                 catch (PipeClosedException)
                 {
-                    foreach (var chunk in unorderedChunks.OrderBy(c => c.Index))
-                    {
-                        WriteChunk(outputStream, chunk, writeChunksLengths);
-                    }
-
                     _logger.Write("Writing complete");
+                    if (unorderedChunks.Count > 0)
+                    {
+                        throw new Exception("Some chunks were missing and some are left");
+                    }
+                    
                     outputStream.Flush();
                     break;
                 }
@@ -66,8 +58,17 @@ namespace GZipTest
             }
         }
 
-        private void WriteChunk(Stream outputStream, Chunk chunk, bool writeChunksLengths)
+        private void WriteChunk(
+            Stream outputStream, 
+            Chunk chunk, 
+            CancellationToken token,
+            bool writeChunksLengths)
         {
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+            
             _logger.Write($"Writing chunk #{chunk.Index} of {chunk.Bytes.Length} bytes");
             if (writeChunksLengths)
             {

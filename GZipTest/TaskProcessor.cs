@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace GZipTest
 {
@@ -15,7 +16,8 @@ namespace GZipTest
         public Task Start(TaskParameters parameters)
         {
             _logger.Write($"Starting task with parameters: {parameters}");
-            
+
+            var cancellationTokenSource = new CancellationTokenSource();
             var inputFile = File.OpenRead(parameters.SourceFullPath);
             var outputFile = File.Create(parameters.DestinationFullPath);
             var inputPipe = new Pipe(parameters.MaxElementsInPipe);
@@ -44,18 +46,18 @@ namespace GZipTest
             {
                 () =>
                 {
-                    (reader ?? throw new ArgumentNullException()).ReadFromStream(inputFile);
+                    (reader ?? throw new ArgumentNullException()).ReadFromStream(inputFile, cancellationTokenSource.Token);
                     inputFile.Close();
                 },
                 () =>
                 {
-                    writer.WriteToStream(outputFile, writeChunksLengths: parameters.Mode == ProcessorMode.Compress);
+                    writer.WriteToStream(outputFile, cancellationTokenSource.Token, writeChunksLengths: parameters.Mode == ProcessorMode.Compress);
                     outputFile.Close();
                 },
             }.Concat((processors ?? throw new ArgumentNullException())
-                .Select<IChunksProcessor, Action>(processor => processor.Start)).ToArray();
+                .Select<IChunksProcessor, Action>(processor => () => processor.Start(cancellationTokenSource.Token))).ToArray();
                     
-            return Task.StartInParallel(actions, _logger);
+            return Task.StartInParallel(actions, cancellationTokenSource, _logger);
         }
         
         private readonly ILogger _logger;

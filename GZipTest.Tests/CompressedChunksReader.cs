@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using Xunit;
 
 namespace GZipTest.Tests
@@ -14,7 +15,7 @@ namespace GZipTest.Tests
             var pipe = new PipeMock();
             var reader = new CompressedChunksReader(pipe, 4, new LoggerMock());
             var stream = new MemoryStream();
-            reader.ReadFromStream(stream);
+            reader.ReadFromStream(stream, new CancellationToken());
             Assert.Empty(pipe.Chunks);
         }
 
@@ -25,7 +26,7 @@ namespace GZipTest.Tests
             var reader = new CompressedChunksReader(pipe, 4, new LoggerMock());
             var bytes = new byte[] { 0x12, 0x34 };
             var stream = new MemoryStream(BitConverter.GetBytes(bytes.Length).Concat(bytes).ToArray());
-            reader.ReadFromStream(stream);
+            reader.ReadFromStream(stream, new CancellationToken());
 
             Assert.Single(pipe.Chunks);
             Assert.Equal(bytes, pipe.Chunks[0].Bytes);
@@ -42,7 +43,7 @@ namespace GZipTest.Tests
                 BitConverter.GetBytes(bytes1.Length).Concat(bytes1)
                     .Concat(BitConverter.GetBytes(bytes2.Length)).Concat(bytes2)
                     .ToArray());
-            reader.ReadFromStream(stream);
+            reader.ReadFromStream(stream, new CancellationToken());
 
             Assert.Equal(2, pipe.Chunks.Count);
             
@@ -61,7 +62,7 @@ namespace GZipTest.Tests
             var bytes1 = new byte[] { 0x12, 0x34 };
             var stream = new MemoryStream(bytes1);
             
-            Assert.Throws<FileCorruptedException>(() => reader.ReadFromStream(stream));
+            Assert.Throws<FileCorruptedException>(() => reader.ReadFromStream(stream, new CancellationToken()));
         }
 
         [Fact]
@@ -76,7 +77,7 @@ namespace GZipTest.Tests
                     .Concat(bytes2)
                     .ToArray());
             
-            Assert.Throws<FileCorruptedException>(() => reader.ReadFromStream(stream));
+            Assert.Throws<FileCorruptedException>(() => reader.ReadFromStream(stream, new CancellationToken()));
         }
 
         [Fact]
@@ -87,7 +88,7 @@ namespace GZipTest.Tests
             var bytes = new byte[] { 0x12, 0x34 };
             var stream = new MemoryStream(BitConverter.GetBytes(bytes.Length + 1).Concat(bytes).ToArray());
             
-            Assert.Throws<FileCorruptedException>(() => reader.ReadFromStream(stream));
+            Assert.Throws<FileCorruptedException>(() => reader.ReadFromStream(stream, new CancellationToken()));
         }
         
         private class PipeMock : IPipe

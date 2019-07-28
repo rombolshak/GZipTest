@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using Xunit;
 
 namespace GZipTest.Tests
@@ -14,7 +15,7 @@ namespace GZipTest.Tests
             var pipe = new PipeMock(new Chunk[0]);
             var stream = new MemoryStream();
             var writer = new ChunksWriter(pipe, new LoggerMock());
-            writer.WriteToStream(stream);
+            writer.WriteToStream(stream, new CancellationToken());
             
             Assert.Equal(0, stream.Length);
         }
@@ -29,7 +30,7 @@ namespace GZipTest.Tests
             });
             var stream = new MemoryStream();
             var writer = new ChunksWriter(pipe, new LoggerMock());
-            writer.WriteToStream(stream);
+            writer.WriteToStream(stream, new CancellationToken());
             
             Assert.Equal(bytes, stream.ToArray());
         }
@@ -45,7 +46,7 @@ namespace GZipTest.Tests
             });
             var stream = new MemoryStream();
             var writer = new ChunksWriter(pipe, new LoggerMock());
-            writer.WriteToStream(stream);
+            writer.WriteToStream(stream, new CancellationToken());
             
             Assert.Equal(bytes, stream.ToArray());
         }
@@ -53,16 +54,19 @@ namespace GZipTest.Tests
         [Fact]
         public void WritesChunksInTheRightOrder()
         {
-            var bytes = new byte[] { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99 };
+            var bytes = new byte[]
+                { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff };
             var pipe = new PipeMock(new[]
             {
                 new Chunk { Bytes =  new byte[] { 0x33, 0x44, 0x55, 0x66 }, Index = 1 },
                 new Chunk { Bytes =  new byte[] { 0x77, 0x88, 0x99 }, Index = 2 },
-                new Chunk { Bytes =  new byte[] { 0x00, 0x11, 0x22 }, Index = 0 }
+                new Chunk { Bytes =  new byte[] { 0x00, 0x11, 0x22 }, Index = 0 },
+                new Chunk { Bytes =  new byte[] { 0xdd, 0xee, 0xff }, Index = 4 },
+                new Chunk { Bytes =  new byte[] { 0xaa, 0xbb, 0xcc }, Index = 3 }
             });
             var stream = new MemoryStream();
             var writer = new ChunksWriter(pipe, new LoggerMock());
-            writer.WriteToStream(stream);
+            writer.WriteToStream(stream, new CancellationToken());
             
             Assert.Equal(bytes, stream.ToArray());
         }
@@ -80,7 +84,7 @@ namespace GZipTest.Tests
             });
             var stream = new MemoryStream();
             var writer = new ChunksWriter(pipe, new LoggerMock());
-            writer.WriteToStream(stream, writeChunksLengths: true);
+            writer.WriteToStream(stream, new CancellationToken(), writeChunksLengths: true);
             
             Assert.Equal(bytes, stream.ToArray());
         }

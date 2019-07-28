@@ -17,13 +17,13 @@ namespace GZipTest.Tests
             var bytes = new byte[] { 0x11, 0x22, 0x11, 0x42 };
             inputPipe.Open();
             
-            var compressorThread = new Thread(() => compressor.Start());
+            var compressorThread = new Thread(() => compressor.Start(new CancellationToken()));
             compressorThread.Start();
             inputPipe.Write(new Chunk { Bytes = bytes });
             var compressedChunk = middlePipe.Read();
             Assert.NotEqual(bytes, compressedChunk.Bytes);
             
-            var decompressorThread = new Thread(() => decompressor.Start());
+            var decompressorThread = new Thread(() => decompressor.Start(new CancellationToken()));
             decompressorThread.Start();
             inputPipe.Write(new Chunk { Bytes = bytes });
             inputPipe.Close();

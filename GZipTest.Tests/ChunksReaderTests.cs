@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using Xunit;
 
 namespace GZipTest.Tests
@@ -14,7 +15,7 @@ namespace GZipTest.Tests
             var pipe = new PipeMock();
             
             var reader = new ChunksReader(pipe, chunkSize: 8, logger: new LoggerMock());
-            reader.ReadFromStream(inputStream);
+            reader.ReadFromStream(inputStream, new CancellationToken());
             
             Assert.Empty(pipe.Chunks);
         }
@@ -27,7 +28,7 @@ namespace GZipTest.Tests
             var pipe = new PipeMock();
 
             var reader = new ChunksReader(pipe, chunkSize: 8, logger: new LoggerMock());
-            reader.ReadFromStream(inputStream);
+            reader.ReadFromStream(inputStream, new CancellationToken());
             
             Assert.Single(pipe.Chunks);
             Assert.Equal(bytes, pipe.Chunks[0].Bytes);
@@ -41,7 +42,7 @@ namespace GZipTest.Tests
             var pipe = new PipeMock();
 
             var reader = new ChunksReader(pipe, chunkSize: 8, logger: new LoggerMock());
-            reader.ReadFromStream(inputStream);
+            reader.ReadFromStream(inputStream, new CancellationToken());
             
             Assert.Equal(2, pipe.Chunks.Count);
             Assert.Equal(8, pipe.Chunks[0].Bytes.Length);

@@ -7,17 +7,21 @@ namespace GZipTest
 {
     public class Task
     {
-        private Task(ILogger logger)
+        private Task(CancellationTokenSource cancellationTokenSource, ILogger logger)
         {
+            _cancellationTokenSource = cancellationTokenSource;
             _logger = logger;
             _timer.Start();
         }
         
         public bool IsErrorOccured { get; private set; }
         
-        public static Task StartInParallel(Action[] actions, ILogger logger)
+        public static Task StartInParallel(
+            Action[] actions, 
+            CancellationTokenSource cancellationTokenSource,
+            ILogger logger)
         {
-            var task = new Task(logger);
+            var task = new Task(cancellationTokenSource, logger);
             var handlesList = new List<WaitHandle>(actions.Length);
             foreach (var action in actions)
             {
@@ -31,7 +35,7 @@ namespace GZipTest
                     catch (Exception e)
                     {
                         logger.WriteError(e.Message);
-                        task.IsErrorOccured = true;
+                        task.Abort();
                     }
                     finally
                     {
@@ -54,8 +58,18 @@ namespace GZipTest
             _logger.Write("");
             _logger.Write($"Task finished in {_timer.Elapsed}");
         }
+
+        public void Abort()
+        {
+            _logger.Write("");
+            _logger.Write("Aborting task...");
+            _logger.Write($"Execution lasted for {_timer.Elapsed}");
+            _cancellationTokenSource.Cancel();
+            IsErrorOccured = true;
+        }
         
         private WaitHandle[] _waitHandles;
+        private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly ILogger _logger;
         private readonly Stopwatch _timer = new Stopwatch();
     }
