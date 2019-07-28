@@ -11,9 +11,9 @@ namespace GZipTest
             _writeGuard = writeGuard;
         }
         
-        public Chunk Read()
+        public Chunk Read(CancellationToken token)
         {
-            AcquireReadLock();
+            AcquireReadLock(token);
             _writeGuard.Release();
             lock (_queue)
             {
@@ -21,9 +21,9 @@ namespace GZipTest
             }
         }
 
-        public void Write(Chunk chunk)
+        public void Write(Chunk chunk, CancellationToken token)
         {
-            _writeGuard.Wait(millisecondsTimeout: int.MaxValue);
+            _writeGuard.Wait(millisecondsTimeout: int.MaxValue, token: token);
             lock (_queue)
             {
                 _queue.Enqueue(chunk);
@@ -43,11 +43,11 @@ namespace GZipTest
             Interlocked.Decrement(ref _registeredWriters);
         }
 
-        private void AcquireReadLock()
+        private void AcquireReadLock(CancellationToken token)
         {
             while (true)
             {
-                _readGuard.Wait(millisecondsTimeout: 500);
+                _readGuard.Wait(millisecondsTimeout: 500, token: token);
                 lock (_queue)
                 {
                     if (_queue.Count == 0)

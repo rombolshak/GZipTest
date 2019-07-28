@@ -117,12 +117,12 @@ namespace GZipTest.Tests
                 _chunks = new Queue<Chunk>(chunks);
             }
 
-            public Chunk Read()
+            public Chunk Read(CancellationToken token)
             {
                 return _chunks.Count > 0 ? _chunks.Dequeue() : throw new PipeClosedException();
             }
 
-            public void Write(Chunk chunk)
+            public void Write(Chunk chunk, CancellationToken token)
             {
                 throw new NotSupportedException();
             }

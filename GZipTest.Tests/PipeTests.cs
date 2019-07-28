@@ -15,33 +15,33 @@ namespace GZipTest.Tests
             var pipe = new GuardedPipe<SemaphoreMock>(readGuard, writeGuard);
             pipe.Open();
 
-            new Thread(() => pipe.Read()).Start();
+            new Thread(() => pipe.Read(new CancellationToken())).Start();
             Thread.Sleep(200);
             Assert.True(readGuard.IsLocked);
             Assert.False(writeGuard.IsLocked);
 
-            pipe.Write(new Chunk { Bytes = new byte[0] });
+            pipe.Write(new Chunk { Bytes = new byte[0] }, new CancellationToken());
             Thread.Sleep(200);
             Assert.False(readGuard.IsLocked);
             Assert.False(writeGuard.IsLocked);
             
-            pipe.Write(new Chunk { Bytes = new byte[0] }); 
-            pipe.Write(new Chunk { Bytes = new byte[0] }); // maxElements reached
+            pipe.Write(new Chunk { Bytes = new byte[0] }, new CancellationToken()); 
+            pipe.Write(new Chunk { Bytes = new byte[0] }, new CancellationToken()); // maxElements reached
             
-            new Thread(() => pipe.Write(new Chunk { Bytes = new byte[0] })).Start();
+            new Thread(() => pipe.Write(new Chunk { Bytes = new byte[0] }, new CancellationToken())).Start();
             Thread.Sleep(200);
             Assert.True(writeGuard.IsLocked);
             Assert.False(readGuard.IsLocked);
             
-            pipe.Read();
+            pipe.Read(new CancellationToken());
             Thread.Sleep(200);
             Assert.False(writeGuard.IsLocked);
             Assert.False(readGuard.IsLocked);
 
             pipe.Close();
-            pipe.Read();
-            pipe.Read();
-            Assert.Throws<PipeClosedException>(() => pipe.Read());
+            pipe.Read(new CancellationToken());
+            pipe.Read(new CancellationToken());
+            Assert.Throws<PipeClosedException>(() => pipe.Read(new CancellationToken()));
         }
         
         private class SemaphoreMock : ISemaphore
@@ -53,7 +53,7 @@ namespace GZipTest.Tests
 
             public bool IsLocked { get; private set; }
             
-            public void Wait(int timeout)
+            public void Wait(int timeout, CancellationToken token)
             {
                 IsLocked = true;
                 _semaphore.Wait(timeout);

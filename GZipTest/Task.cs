@@ -34,7 +34,6 @@ namespace GZipTest
                     }
                     catch (Exception e)
                     {
-                        logger.WriteError(e.Message);
                         task.Abort();
                     }
                     finally

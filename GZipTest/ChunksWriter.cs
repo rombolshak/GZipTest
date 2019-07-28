@@ -14,9 +14,8 @@ namespace GZipTest
             _logger = logger;
         }
 
-        public void WriteToStream(
-            Stream outputStream, 
-            CancellationToken token, 
+        public void WriteToStream(Stream outputStream,
+            CancellationToken token,
             int expectedChunksCount,
             bool writeChunksLengths = false)
         {
@@ -26,7 +25,7 @@ namespace GZipTest
             {
                 try
                 {
-                    var chunk = _pipe.Read();
+                    var chunk = _pipe.Read(token);
                     _logger.Write($"Requested to write chunk #{chunk.Index}, expecting #{index}");
                     if (chunk.Index != index)
                     {
@@ -68,8 +67,8 @@ namespace GZipTest
         }
 
         private void WriteChunk(
-            Stream outputStream, 
-            Chunk chunk, 
+            Stream outputStream,
+            Chunk chunk,
             CancellationToken token,
             bool writeChunksLengths)
         {

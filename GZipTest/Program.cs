@@ -25,9 +25,10 @@ namespace GZipTest
                     cancelEventArgs.Cancel = true;
                     task.Abort();
                 };
-                
+
                 task.Wait();
-                logger.Write("Execution finished " + (task.IsErrorOccured ? "with errors or was aborted" : "successfully"));
+                logger.Write("Execution finished " +
+                             (task.IsErrorOccured ? "with errors or was aborted" : "successfully"));
                 return task.IsErrorOccured ? 1 : 0;
             }
             catch (Exception e)

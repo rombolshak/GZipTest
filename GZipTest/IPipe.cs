@@ -1,9 +1,11 @@
+using System.Threading;
+
 namespace GZipTest
 {
     public interface IPipe
     {
-        Chunk Read();
-        void Write(Chunk chunk);
+        Chunk Read(CancellationToken token);
+        void Write(Chunk chunk, CancellationToken token);
         void Open();
         void Close();
     }

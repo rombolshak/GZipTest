@@ -19,16 +19,16 @@ namespace GZipTest.Tests
             
             var compressorThread = new Thread(() => compressor.Start(new CancellationToken()));
             compressorThread.Start();
-            inputPipe.Write(new Chunk { Bytes = bytes });
-            var compressedChunk = middlePipe.Read();
+            inputPipe.Write(new Chunk { Bytes = bytes }, new CancellationToken());
+            var compressedChunk = middlePipe.Read(new CancellationToken());
             Assert.NotEqual(bytes, compressedChunk.Bytes);
             
             var decompressorThread = new Thread(() => decompressor.Start(new CancellationToken()));
             decompressorThread.Start();
-            inputPipe.Write(new Chunk { Bytes = bytes });
+            inputPipe.Write(new Chunk { Bytes = bytes }, new CancellationToken());
             inputPipe.Close();
             
-            var result = outputPipe.Read();
+            var result = outputPipe.Read(new CancellationToken());
             Assert.Equal(bytes, result.Bytes);
 
             compressorThread.Join();

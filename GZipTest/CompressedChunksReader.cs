@@ -53,7 +53,7 @@ namespace GZipTest
 
                     var chunkBytes = new byte[chunkLength];
                     Buffer.BlockCopy(buffer, 0, chunkBytes, 0, bytesRead);
-                    _pipe.Write(new Chunk { Bytes = chunkBytes, Index = index });
+                    _pipe.Write(new Chunk { Bytes = chunkBytes, Index = index }, token);
                     _logger.Write($"Read compressed chunk #{index} of {chunkLength} bytes");
                     index++;
                 }

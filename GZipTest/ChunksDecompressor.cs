@@ -22,14 +22,14 @@ namespace GZipTest
             {
                 try
                 {
-                    var chunk = _inputPipe.Read();
+                    var chunk = _inputPipe.Read(token);
                     using (var gzipStream = new GZipStream(new MemoryStream(chunk.Bytes), CompressionMode.Decompress))
                     {
                         gzipStream.CopyTo(processedStream);
                     }
 
                     var processedBytes = processedStream.ToArray();
-                    _outputPipe.Write(new Chunk { Bytes = processedBytes, Index = chunk.Index });
+                    _outputPipe.Write(new Chunk { Bytes = processedBytes, Index = chunk.Index }, token);
                     processedStream.Position = 0;
                     processedStream.SetLength(0);
                     _logger.Write(

@@ -95,12 +95,12 @@ namespace GZipTest.Tests
         {
             public List<Chunk> Chunks { get; } = new List<Chunk>();
             
-            public Chunk Read()
+            public Chunk Read(CancellationToken token)
             {
                 throw new NotSupportedException();
             }
 
-            public void Write(Chunk chunk)
+            public void Write(Chunk chunk, CancellationToken token)
             {
                 Chunks.Add(chunk);
             }
