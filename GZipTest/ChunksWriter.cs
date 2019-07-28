@@ -14,7 +14,11 @@ namespace GZipTest
             _logger = logger;
         }
 
-        public void WriteToStream(Stream outputStream, CancellationToken token, bool writeChunksLengths = false)
+        public void WriteToStream(
+            Stream outputStream, 
+            CancellationToken token, 
+            int expectedChunksCount,
+            bool writeChunksLengths = false)
         {
             var index = 0;
             var unorderedChunks = new List<Chunk>();
@@ -42,12 +46,17 @@ namespace GZipTest
                 catch (PipeClosedException)
                 {
                     _logger.Write("Writing complete");
+                    outputStream.Flush();
                     if (unorderedChunks.Count > 0)
                     {
                         throw new Exception("Some chunks were missing and some are left");
                     }
+
+                    if (index != expectedChunksCount)
+                    {
+                        throw new FileCorruptedException();
+                    }
                     
-                    outputStream.Flush();
                     break;
                 }
                 catch (Exception e)

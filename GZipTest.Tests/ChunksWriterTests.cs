@@ -15,7 +15,7 @@ namespace GZipTest.Tests
             var pipe = new PipeMock(new Chunk[0]);
             var stream = new MemoryStream();
             var writer = new ChunksWriter(pipe, new LoggerMock());
-            writer.WriteToStream(stream, new CancellationToken());
+            writer.WriteToStream(stream, new CancellationToken(), 0);
             
             Assert.Equal(0, stream.Length);
         }
@@ -30,7 +30,7 @@ namespace GZipTest.Tests
             });
             var stream = new MemoryStream();
             var writer = new ChunksWriter(pipe, new LoggerMock());
-            writer.WriteToStream(stream, new CancellationToken());
+            writer.WriteToStream(stream, new CancellationToken(), 1);
             
             Assert.Equal(bytes, stream.ToArray());
         }
@@ -46,7 +46,7 @@ namespace GZipTest.Tests
             });
             var stream = new MemoryStream();
             var writer = new ChunksWriter(pipe, new LoggerMock());
-            writer.WriteToStream(stream, new CancellationToken());
+            writer.WriteToStream(stream, new CancellationToken(), 2);
             
             Assert.Equal(bytes, stream.ToArray());
         }
@@ -66,7 +66,7 @@ namespace GZipTest.Tests
             });
             var stream = new MemoryStream();
             var writer = new ChunksWriter(pipe, new LoggerMock());
-            writer.WriteToStream(stream, new CancellationToken());
+            writer.WriteToStream(stream, new CancellationToken(), 5);
             
             Assert.Equal(bytes, stream.ToArray());
         }
@@ -84,9 +84,30 @@ namespace GZipTest.Tests
             });
             var stream = new MemoryStream();
             var writer = new ChunksWriter(pipe, new LoggerMock());
-            writer.WriteToStream(stream, new CancellationToken(), writeChunksLengths: true);
+            writer.WriteToStream(stream, new CancellationToken(), 2, writeChunksLengths: true);
             
             Assert.Equal(bytes, stream.ToArray());
+        }
+
+        [Fact]
+        public void TestCorruptedExpectedChunks()
+        {
+            var bytes = BitConverter.GetBytes(3).Concat(new byte[] { 0x00, 0x11, 0x22 })
+                .Concat(BitConverter.GetBytes(4)).Concat(new byte[] { 0x33, 0x44, 0x55, 0x66 })
+                .ToArray();
+            var pipe = new PipeMock(new[]
+            {
+                new Chunk { Bytes =  new byte[] { 0x00, 0x11, 0x22 }, Index = 0 },
+                new Chunk { Bytes =  new byte[] { 0x33, 0x44, 0x55, 0x66 }, Index = 1 }
+            });
+            var stream = new MemoryStream();
+            var writer = new ChunksWriter(pipe, new LoggerMock());
+            Assert.Throws<FileCorruptedException>(
+                () => writer.WriteToStream(
+                    stream, 
+                    new CancellationToken(), 
+                    expectedChunksCount: 222,
+                    writeChunksLengths: true));
         }
         
         private class PipeMock : IPipe

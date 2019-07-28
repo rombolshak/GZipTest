@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -88,6 +89,17 @@ namespace GZipTest.Tests
             task.Abort();
             task.Wait();
             Assert.True(task.IsErrorOccured);
+        }
+
+        [Fact]
+        public void TestMagicHeaderMissing()
+        {
+            const string text = "Test test test, ho ho ho. ";
+            const string compressedTxt = "compressed.txt";
+            File.WriteAllText("in.txt", text);
+            var parameters = new TaskParameters(ProcessorMode.Decompress, "in.txt", compressedTxt);
+            var processor = new TaskProcessor(new LoggerMock());
+            Assert.Throws<Exception>(() => processor.Start(parameters).Wait());
         }
     }
 }
