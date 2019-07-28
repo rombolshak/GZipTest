@@ -55,7 +55,7 @@ namespace GZipTest
             }.Concat((processors ?? throw new ArgumentNullException())
                 .Select<IChunksProcessor, Action>(processor => processor.Start)).ToArray();
                     
-            return Task.StartInParallel(actions);
+            return Task.StartInParallel(actions, _logger);
         }
         
         private readonly ILogger _logger;

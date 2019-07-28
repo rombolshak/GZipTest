@@ -1,14 +1,21 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 
 namespace GZipTest
 {
     public class Task
     {
-        public static Task StartInParallel(Action[] actions)
+        private Task(ILogger logger)
         {
-            var task = new Task();
+            _logger = logger;
+            _timer.Start();
+        }
+        
+        public static Task StartInParallel(Action[] actions, ILogger logger)
+        {
+            var task = new Task(logger);
             var handlesList = new List<WaitHandle>(actions.Length);
             foreach (var action in actions)
             {
@@ -30,8 +37,12 @@ namespace GZipTest
         public void Wait()
         {
             WaitHandle.WaitAll(_waitHandles);
+            _timer.Stop();
+            _logger.Write($"Task finished in {_timer.Elapsed}");
         }
         
         private WaitHandle[] _waitHandles;
+        private readonly ILogger _logger;
+        private readonly Stopwatch _timer = new Stopwatch();
     }
 }

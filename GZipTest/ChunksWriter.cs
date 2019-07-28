@@ -35,10 +35,17 @@ namespace GZipTest
 
                         _logger.Write($"Found chunk #{index} in queue, writing");
                         chunk = found;
+                        unorderedChunks.Remove(found);
                     }
                     
                     WriteChunk(outputStream, chunk, writeChunksLengths);
                     index++;
+                    while ((chunk = unorderedChunks.FirstOrDefault(c => c.Index == index)) != null)
+                    {
+                        unorderedChunks.Remove(chunk);
+                        WriteChunk(outputStream, chunk, writeChunksLengths);
+                        index++;
+                    }
                 }
                 catch (PipeClosedException)
                 {

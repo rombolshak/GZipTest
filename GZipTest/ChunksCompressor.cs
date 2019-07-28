@@ -26,9 +26,11 @@ namespace GZipTest
                         gzipStream.Write(chunk.Bytes, 0, chunk.Bytes.Length);
                     }
 
-                    _outputPipe.Write(new Chunk { Bytes = processedStream.ToArray(), Index = chunk.Index });
+                    var processedBytes = processedStream.ToArray();
+                    _outputPipe.Write(new Chunk { Bytes = processedBytes, Index = chunk.Index });
                     processedStream.Position = 0;
-                    _logger.Write($"Compressed chunk #{chunk.Index}");
+                    _logger.Write(
+                        $"Compressed chunk #{chunk.Index} from {chunk.Bytes.Length} bytes to {processedBytes.Length}");
                 }
                 catch (PipeClosedException)
                 {
