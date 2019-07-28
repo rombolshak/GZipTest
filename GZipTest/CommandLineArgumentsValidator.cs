@@ -38,7 +38,6 @@ namespace GZipTest
                 return ValidationResult.Error(destinationValidationResult, args[2]);
             }
             
-            File.Delete(destinationFullPath);
             return ValidationResult.Successful(new TaskParameters(mode, sourceFullPath, destinationFullPath));
         }
 

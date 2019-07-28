@@ -3,7 +3,7 @@ using System.IO;
 
 namespace GZipTest
 {
-    public class CompressedChunksReader
+    public class CompressedChunksReader : IChunksReader
     {
         public CompressedChunksReader(IPipe pipe, int chunkSize)
         {

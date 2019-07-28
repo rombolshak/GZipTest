@@ -15,6 +15,10 @@ namespace GZipTest
                 return 1;
             }
             
+            var taskProcessor = new TaskProcessor();
+            var task = taskProcessor.Start(validationResult.TaskParameters);
+            task.Wait();
+            
             return 0;
         }
     }

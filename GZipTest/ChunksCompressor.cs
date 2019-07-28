@@ -3,7 +3,7 @@ using System.IO.Compression;
 
 namespace GZipTest
 {
-    public class ChunksCompressor
+    public class ChunksCompressor : IChunksProcessor
     {
         public ChunksCompressor(IPipe inputPipe, IPipe outputPipe)
         {
