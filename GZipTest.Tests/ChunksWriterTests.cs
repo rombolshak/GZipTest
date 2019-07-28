@@ -13,7 +13,7 @@ namespace GZipTest.Tests
         {
             var pipe = new PipeMock(new Chunk[0]);
             var stream = new MemoryStream();
-            var writer = new ChunksWriter(pipe);
+            var writer = new ChunksWriter(pipe, new LoggerMock());
             writer.WriteToStream(stream);
             
             Assert.Equal(0, stream.Length);
@@ -28,7 +28,7 @@ namespace GZipTest.Tests
                 new Chunk { Bytes = bytes } 
             });
             var stream = new MemoryStream();
-            var writer = new ChunksWriter(pipe);
+            var writer = new ChunksWriter(pipe, new LoggerMock());
             writer.WriteToStream(stream);
             
             Assert.Equal(bytes, stream.ToArray());
@@ -44,7 +44,7 @@ namespace GZipTest.Tests
                 new Chunk { Bytes =  new byte[] { 0x33, 0x44, 0x55, 0x66 }, Index = 1 }
             });
             var stream = new MemoryStream();
-            var writer = new ChunksWriter(pipe);
+            var writer = new ChunksWriter(pipe, new LoggerMock());
             writer.WriteToStream(stream);
             
             Assert.Equal(bytes, stream.ToArray());
@@ -61,7 +61,7 @@ namespace GZipTest.Tests
                 new Chunk { Bytes =  new byte[] { 0x00, 0x11, 0x22 }, Index = 0 }
             });
             var stream = new MemoryStream();
-            var writer = new ChunksWriter(pipe);
+            var writer = new ChunksWriter(pipe, new LoggerMock());
             writer.WriteToStream(stream);
             
             Assert.Equal(bytes, stream.ToArray());
@@ -79,7 +79,7 @@ namespace GZipTest.Tests
                 new Chunk { Bytes =  new byte[] { 0x33, 0x44, 0x55, 0x66 }, Index = 1 }
             });
             var stream = new MemoryStream();
-            var writer = new ChunksWriter(pipe);
+            var writer = new ChunksWriter(pipe, new LoggerMock());
             writer.WriteToStream(stream, writeChunksLengths: true);
             
             Assert.Equal(bytes, stream.ToArray());

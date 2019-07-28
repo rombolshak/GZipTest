@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using Xunit;
 
 namespace GZipTest.Tests
@@ -9,12 +10,14 @@ namespace GZipTest.Tests
         public CommandLineArgumentsValidatorTests()
         {
             File.Create(ExistingSource).Dispose();
+            File.Delete(Destination);
+            Thread.Sleep(100); // wait while OS performs file operations
         }
 
         [Fact]
         public void AcceptsExactlyThreeArguments()
         {
-            var validator = new CommandLineArgumentsValidator();
+            var validator = new CommandLineArgumentsValidator(new LoggerMock());
             var result = validator.Validate(new[] { "compress", ExistingSource, Destination });
             Assert.Equal(ValidationError.Success, result.ValidationError);
 
@@ -28,7 +31,7 @@ namespace GZipTest.Tests
         [Fact]
         public void FirstArgIsProcessMode()
         {
-            var validator = new CommandLineArgumentsValidator();
+            var validator = new CommandLineArgumentsValidator(new LoggerMock());
             var result = validator.Validate(new[] { "compress", ExistingSource, Destination });
             Assert.Equal(ValidationError.Success, result.ValidationError);
             Assert.Equal(ProcessorMode.Compress, result.TaskParameters.Mode);
@@ -44,7 +47,7 @@ namespace GZipTest.Tests
         [Fact]
         public void SourceMustBeCorrectPath()
         {
-            var validator = new CommandLineArgumentsValidator();
+            var validator = new CommandLineArgumentsValidator(new LoggerMock());
             var result = validator.Validate(new[] { "compress", "incorrect:file^name", Destination });
             Assert.Equal(ValidationError.PathIsIncorrect, result.ValidationError);
         }
@@ -52,7 +55,7 @@ namespace GZipTest.Tests
         [Fact]
         public void SourceFileMustExist()
         {
-            var validator = new CommandLineArgumentsValidator();
+            var validator = new CommandLineArgumentsValidator(new LoggerMock());
             var result = validator.Validate(new[] { "compress", "not-exists.txt", Destination });
             Assert.Equal(ValidationError.SourceNotExists, result.ValidationError);
 
@@ -63,7 +66,7 @@ namespace GZipTest.Tests
         [Fact]
         public void SourceFileRelativePathConvertsToFull()
         {
-            var validator = new CommandLineArgumentsValidator();
+            var validator = new CommandLineArgumentsValidator(new LoggerMock());
             var result = validator.Validate(new[] { "compress", ExistingSource, Destination });
             Assert.Equal(ValidationError.Success, result.ValidationError);
             
@@ -77,7 +80,7 @@ namespace GZipTest.Tests
         [Fact]
         public void DestinationMustBeCorrectPath()
         {
-            var validator = new CommandLineArgumentsValidator();
+            var validator = new CommandLineArgumentsValidator(new LoggerMock());
             var result = validator.Validate(new[] { "compress", ExistingSource, "   " });
             Assert.Equal(ValidationError.PathIsIncorrect, result.ValidationError);
         }
@@ -85,7 +88,7 @@ namespace GZipTest.Tests
         [Fact]
         public void DestinationMustNotExist()
         {
-            var validator = new CommandLineArgumentsValidator();
+            var validator = new CommandLineArgumentsValidator(new LoggerMock());
             File.Create("111.txt").Dispose();
             var result = validator.Validate(new[] { "compress", ExistingSource, "111.txt" });
             File.Delete("111.txt");
@@ -95,15 +98,16 @@ namespace GZipTest.Tests
         [Fact]
         public void DestinationFileRelativePathConvertsToFull()
         {
-            var validator = new CommandLineArgumentsValidator();
+            var validator = new CommandLineArgumentsValidator(new LoggerMock());
             var result = validator.Validate(new[] { "compress", ExistingSource, Destination });
             Assert.Equal(ValidationError.Success, result.ValidationError);
             
             var fullPath = Path.Combine(Environment.CurrentDirectory, Destination);
             Assert.Equal(fullPath,result.TaskParameters.DestinationFullPath);
             
-            
             result = validator.Validate(new[] { "compress", ExistingSource, fullPath });
+            Assert.Equal("", result.AdditionalValidationData);
+            Assert.Equal(ValidationError.Success, result.ValidationError);
             Assert.Equal(fullPath,result.TaskParameters.DestinationFullPath);
         }
         

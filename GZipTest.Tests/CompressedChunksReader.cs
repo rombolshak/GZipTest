@@ -12,7 +12,7 @@ namespace GZipTest.Tests
         public void EmptyStreamProducesNoChunks()
         {
             var pipe = new PipeMock();
-            var reader = new CompressedChunksReader(pipe, 4);
+            var reader = new CompressedChunksReader(pipe, 4, new LoggerMock());
             var stream = new MemoryStream();
             reader.ReadFromStream(stream);
             Assert.Empty(pipe.Chunks);
@@ -22,7 +22,7 @@ namespace GZipTest.Tests
         public void TestSingleChunk()
         {
             var pipe = new PipeMock();
-            var reader = new CompressedChunksReader(pipe, 4);
+            var reader = new CompressedChunksReader(pipe, 4, new LoggerMock());
             var bytes = new byte[] { 0x12, 0x34 };
             var stream = new MemoryStream(BitConverter.GetBytes(bytes.Length).Concat(bytes).ToArray());
             reader.ReadFromStream(stream);
@@ -35,7 +35,7 @@ namespace GZipTest.Tests
         public void TestSeveralChunks()
         {
             var pipe = new PipeMock();
-            var reader = new CompressedChunksReader(pipe, 4);
+            var reader = new CompressedChunksReader(pipe, 4, new LoggerMock());
             var bytes1 = new byte[] { 0x12, 0x34 };
             var bytes2 = new byte[] { 0x56, 0x78, 0x90, 0xAB, 0xCD };
             var stream = new MemoryStream(
@@ -57,7 +57,7 @@ namespace GZipTest.Tests
         public void TestCorruptedLengthHeader()
         {
             var pipe = new PipeMock();
-            var reader = new CompressedChunksReader(pipe, 4);
+            var reader = new CompressedChunksReader(pipe, 4, new LoggerMock());
             var bytes1 = new byte[] { 0x12, 0x34 };
             var stream = new MemoryStream(bytes1);
             
@@ -68,7 +68,7 @@ namespace GZipTest.Tests
         public void TestIncorrectLengthHeader()
         {
             var pipe = new PipeMock();
-            var reader = new CompressedChunksReader(pipe, 4);
+            var reader = new CompressedChunksReader(pipe, 4, new LoggerMock());
             var bytes1 = new byte[] { 0x12, 0x34 };
             var bytes2 = new byte[] { 0x56, 0x78, 0x90, 0xAB, 0xCD };
             var stream = new MemoryStream(
@@ -83,7 +83,7 @@ namespace GZipTest.Tests
         public void TestMissingBody()
         {
             var pipe = new PipeMock();
-            var reader = new CompressedChunksReader(pipe, 4);
+            var reader = new CompressedChunksReader(pipe, 4, new LoggerMock());
             var bytes = new byte[] { 0x12, 0x34 };
             var stream = new MemoryStream(BitConverter.GetBytes(bytes.Length + 1).Concat(bytes).ToArray());
             

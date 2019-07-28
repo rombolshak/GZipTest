@@ -10,6 +10,7 @@ namespace GZipTest
         PathIsIncorrect,
         SecurityViolation,
         PathNotFound,
-        PathAlreadyExists
+        PathAlreadyExists,
+        Other
     }
 }

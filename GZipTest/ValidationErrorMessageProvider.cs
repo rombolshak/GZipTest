@@ -27,6 +27,8 @@ namespace GZipTest
                     return $"File or directory specified ({result.AdditionalValidationData}) does not exists";
                 case ValidationError.PathAlreadyExists:
                     return $"File {result.AdditionalValidationData} is already exists";
+                case ValidationError.Other:
+                    return $"Error occured while checking file {result.AdditionalValidationData}";
                 default:
                     throw new ArgumentOutOfRangeException(nameof(result), result, null);
             }

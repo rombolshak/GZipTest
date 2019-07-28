@@ -5,10 +5,11 @@ namespace GZipTest
 {
     public class ChunksReader : IChunksReader
     {
-        public ChunksReader(IPipe pipe, int chunkSize)
+        public ChunksReader(IPipe pipe, int chunkSize, ILogger logger)
         {
             _pipe = pipe;
             _chunkSize = chunkSize;
+            _logger = logger;
         }
 
         public void ReadFromStream(Stream inputStream)
@@ -22,13 +23,16 @@ namespace GZipTest
                 var chunkBytes = new byte[bytesRead];
                 Buffer.BlockCopy(buffer, 0, chunkBytes, 0, bytesRead);
                 _pipe.Write(new Chunk { Bytes = chunkBytes, Index = index });
+                _logger.Write($"Read chunk #{index}");
                 index++;
             }
 
+            _logger.Write("Reading complete");
             _pipe.Close();
         }
         
         private readonly IPipe _pipe;
         private readonly int _chunkSize;
+        private readonly ILogger _logger;
     }
 }

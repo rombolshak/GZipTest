@@ -13,7 +13,7 @@ namespace GZipTest.Tests
             var inputStream = new MemoryStream();
             var pipe = new PipeMock();
             
-            var reader = new ChunksReader(pipe, chunkSize: 8);
+            var reader = new ChunksReader(pipe, chunkSize: 8, logger: new LoggerMock());
             reader.ReadFromStream(inputStream);
             
             Assert.Empty(pipe.Chunks);
@@ -26,7 +26,7 @@ namespace GZipTest.Tests
             var inputStream = new MemoryStream(bytes);
             var pipe = new PipeMock();
 
-            var reader = new ChunksReader(pipe, chunkSize: 8);
+            var reader = new ChunksReader(pipe, chunkSize: 8, logger: new LoggerMock());
             reader.ReadFromStream(inputStream);
             
             Assert.Single(pipe.Chunks);
@@ -40,7 +40,7 @@ namespace GZipTest.Tests
             var inputStream = new MemoryStream(bytes);
             var pipe = new PipeMock();
 
-            var reader = new ChunksReader(pipe, chunkSize: 8);
+            var reader = new ChunksReader(pipe, chunkSize: 8, logger: new LoggerMock());
             reader.ReadFromStream(inputStream);
             
             Assert.Equal(2, pipe.Chunks.Count);

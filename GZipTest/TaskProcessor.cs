@@ -7,29 +7,36 @@ namespace GZipTest
 {
     public class TaskProcessor
     {
+        public TaskProcessor(ILogger logger)
+        {
+            _logger = logger;
+        }
+
         public Task Start(TaskParameters parameters)
         {
+            _logger.Write($"Starting task with parameters: {parameters}");
+            
             var inputFile = File.OpenRead(parameters.SourceFullPath);
             var outputFile = File.Create(parameters.DestinationFullPath);
-            var inputPipe = new Pipe(parameters.MaxElementsInPipe);
-            var outputPipe = new Pipe(parameters.MaxElementsInPipe);
+            var inputPipe = new Pipe(parameters.MaxElementsInPipe, _logger);
+            var outputPipe = new Pipe(parameters.MaxElementsInPipe, _logger);
             
-            var writer = new ChunksWriter(outputPipe);
+            var writer = new ChunksWriter(outputPipe, _logger);
             IChunksReader reader = null;
             IEnumerable<IChunksProcessor> processors = null;
             
             switch (parameters.Mode)
             {
                 case ProcessorMode.Compress:
-                    reader = new ChunksReader(inputPipe, parameters.ChunkSize);
+                    reader = new ChunksReader(inputPipe, parameters.ChunkSize, _logger);
                     processors = Enumerable.Range(0, parameters.ParallelismDegree).Select(
-                        _ => new ChunksCompressor(inputPipe, outputPipe));
+                        _ => new ChunksCompressor(inputPipe, outputPipe, _logger));
                     break;
                 
                 case ProcessorMode.Decompress:
-                    reader = new CompressedChunksReader(inputPipe, parameters.ChunkSize);
+                    reader = new CompressedChunksReader(inputPipe, parameters.ChunkSize, _logger);
                     processors = Enumerable.Range(0, parameters.ParallelismDegree).Select(
-                        _ => new ChunksDecompressor(inputPipe, outputPipe));
+                        _ => new ChunksDecompressor(inputPipe, outputPipe, _logger));
                     break;
             }
 
@@ -50,5 +57,7 @@ namespace GZipTest
                     
             return Task.StartInParallel(actions);
         }
+        
+        private readonly ILogger _logger;
     }
 }

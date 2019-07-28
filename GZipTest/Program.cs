@@ -6,7 +6,8 @@ namespace GZipTest
     {
         public static int Main(string[] args)
         {
-            var validator = new CommandLineArgumentsValidator();
+            var logger = new MultithreadingConsoleLogger();
+            var validator = new CommandLineArgumentsValidator(logger);
             var validationResult = validator.Validate(args);
             
             if (validationResult.ValidationError != ValidationError.Success)
@@ -15,7 +16,7 @@ namespace GZipTest
                 return 1;
             }
             
-            var taskProcessor = new TaskProcessor();
+            var taskProcessor = new TaskProcessor(logger);
             var task = taskProcessor.Start(validationResult.TaskParameters);
             task.Wait();
             

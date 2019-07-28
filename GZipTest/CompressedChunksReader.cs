@@ -5,10 +5,11 @@ namespace GZipTest
 {
     public class CompressedChunksReader : IChunksReader
     {
-        public CompressedChunksReader(IPipe pipe, int chunkSize)
+        public CompressedChunksReader(IPipe pipe, int chunkSize, ILogger logger)
         {
             _pipe = pipe;
             _chunkSize = chunkSize;
+            _logger = logger;
         }
 
         public void ReadFromStream(Stream inputStream)
@@ -34,6 +35,7 @@ namespace GZipTest
                 
                 if (chunkLength > maxChunkLength)
                 {
+                    _logger.Write($"Increasing reading buffer to {chunkLength}");
                     maxChunkLength = chunkLength;
                     buffer = new byte[maxChunkLength];
                 }
@@ -47,6 +49,7 @@ namespace GZipTest
                 var chunkBytes = new byte[chunkLength];
                 Buffer.BlockCopy(buffer, 0, chunkBytes, 0, bytesRead);
                 _pipe.Write(new Chunk { Bytes = chunkBytes, Index = index });
+                _logger.Write($"Read compressed chunk #{index} of {chunkLength} bytes");
                 index++;
             }
 
@@ -55,5 +58,6 @@ namespace GZipTest
         
         private readonly IPipe _pipe;
         private readonly int _chunkSize;
+        private readonly ILogger _logger;
     }
 }

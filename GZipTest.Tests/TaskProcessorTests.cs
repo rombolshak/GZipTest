@@ -15,7 +15,7 @@ namespace GZipTest.Tests
             const string decompressedTxt = "decompressed.txt";
             File.WriteAllText("in.txt", text);
             var parameters = new TaskParameters(ProcessorMode.Compress, "in.txt", compressedTxt);
-            var processor = new TaskProcessor();
+            var processor = new TaskProcessor(new LoggerMock());
             var task = processor.Start(parameters);
             task.Wait();
             
@@ -38,7 +38,7 @@ namespace GZipTest.Tests
             const string decompressedTxt = "decompressed.txt";
             File.WriteAllText("in.txt", text);
             var parameters = new TaskParameters(ProcessorMode.Compress, "in.txt", compressedTxt);
-            var processor = new TaskProcessor();
+            var processor = new TaskProcessor(new LoggerMock());
             var task = processor.Start(parameters);
             task.Wait();
             

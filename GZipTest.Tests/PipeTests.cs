@@ -12,7 +12,7 @@ namespace GZipTest.Tests
             var readGuard = new SemaphoreMock(0);
             var writeGuard = new SemaphoreMock(maxElements);
             
-            var pipe = new GuardedPipe<SemaphoreMock>(readGuard, writeGuard);
+            var pipe = new GuardedPipe<SemaphoreMock>(readGuard, writeGuard, new LoggerMock());
             pipe.Open();
 
             new Thread(() => pipe.Read()).Start();
@@ -20,15 +20,15 @@ namespace GZipTest.Tests
             Assert.True(readGuard.IsLocked);
             Assert.False(writeGuard.IsLocked);
 
-            pipe.Write(new Chunk());
+            pipe.Write(new Chunk { Bytes = new byte[0] });
             Thread.Sleep(200);
             Assert.False(readGuard.IsLocked);
             Assert.False(writeGuard.IsLocked);
             
-            pipe.Write(new Chunk()); 
-            pipe.Write(new Chunk()); // maxElements reached
+            pipe.Write(new Chunk { Bytes = new byte[0] }); 
+            pipe.Write(new Chunk { Bytes = new byte[0] }); // maxElements reached
             
-            new Thread(() => pipe.Write(new Chunk())).Start();
+            new Thread(() => pipe.Write(new Chunk { Bytes = new byte[0] })).Start();
             Thread.Sleep(200);
             Assert.True(writeGuard.IsLocked);
             Assert.False(readGuard.IsLocked);

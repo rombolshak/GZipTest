@@ -8,11 +8,12 @@ namespace GZipTest.Tests
         [Fact]
         public void TestCompressDecompress()
         {
-            var inputPipe = new Pipe(8);
-            var middlePipe = new Pipe(8);
-            var outputPipe = new Pipe(8);
-            var compressor = new ChunksCompressor(inputPipe, middlePipe);
-            var decompressor = new ChunksDecompressor(middlePipe, outputPipe);
+            var logger = new LoggerMock();
+            var inputPipe = new Pipe(8, logger);
+            var middlePipe = new Pipe(8, logger);
+            var outputPipe = new Pipe(8, logger);
+            var compressor = new ChunksCompressor(inputPipe, middlePipe, logger);
+            var decompressor = new ChunksDecompressor(middlePipe, outputPipe, logger);
             var bytes = new byte[] { 0x11, 0x22, 0x11, 0x42 };
             inputPipe.Open();
             

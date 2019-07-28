@@ -25,6 +25,12 @@ namespace GZipTest
         public int ChunkSize { get; }
         
         public int MaxElementsInPipe { get; }
+
+        public override string ToString() =>
+            $"Mode = {Mode.ToString()}; " +
+            $"Source = {SourceFullPath};" +
+            $" Destination = {DestinationFullPath}; " +
+            $"Parallel processors count = {ParallelismDegree}";
     }
 
     public enum ProcessorMode

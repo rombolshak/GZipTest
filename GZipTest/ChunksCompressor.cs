@@ -5,10 +5,11 @@ namespace GZipTest
 {
     public class ChunksCompressor : IChunksProcessor
     {
-        public ChunksCompressor(IPipe inputPipe, IPipe outputPipe)
+        public ChunksCompressor(IPipe inputPipe, IPipe outputPipe, ILogger logger)
         {
             _inputPipe = inputPipe;
             _outputPipe = outputPipe;
+            _logger = logger;
         }
         
         public void Start()
@@ -27,9 +28,11 @@ namespace GZipTest
 
                     _outputPipe.Write(new Chunk { Bytes = processedStream.ToArray(), Index = chunk.Index });
                     processedStream.Position = 0;
+                    _logger.Write($"Compressed chunk #{chunk.Index}");
                 }
                 catch (PipeClosedException)
                 {
+                    _logger.Write("Compressing complete");
                     _outputPipe.Close();
                     break;
                 }
@@ -38,5 +41,6 @@ namespace GZipTest
         
         private readonly IPipe _inputPipe;
         private readonly IPipe _outputPipe;
+        private readonly ILogger _logger;
     }
 }

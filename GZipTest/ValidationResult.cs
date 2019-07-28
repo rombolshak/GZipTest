@@ -3,8 +3,8 @@ namespace GZipTest
     public class ValidationResult
     {
         public ValidationError ValidationError { get; private set; }
-        
-        public string AdditionalValidationData { get; private set; }
+
+        public string AdditionalValidationData { get; private set; } = "";
         
         public TaskParameters TaskParameters { get; private set; }
 
