@@ -12,7 +12,7 @@ namespace GZipTest.Tests
             var readGuard = new SemaphoreMock(0);
             var writeGuard = new SemaphoreMock(maxElements);
             
-            var pipe = new GuardedPipe<SemaphoreMock>(readGuard, writeGuard, new LoggerMock());
+            var pipe = new GuardedPipe<SemaphoreMock>(readGuard, writeGuard);
             pipe.Open();
 
             new Thread(() => pipe.Read()).Start();

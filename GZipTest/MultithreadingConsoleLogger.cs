@@ -10,5 +10,14 @@ namespace GZipTest
         {
             Console.WriteLine($"{Path.GetFileNameWithoutExtension(caller)}:{Environment.CurrentManagedThreadId}: {message}");
         }
+
+        public void WriteError(string message, [CallerFilePath]string caller = "")
+        {
+            Console.Error.WriteLine();
+            Console.Error.WriteLine("====================");
+            Console.Error.WriteLine(message);
+            Console.Error.WriteLine("====================");
+            Console.Error.WriteLine();
+        }
     }
 }

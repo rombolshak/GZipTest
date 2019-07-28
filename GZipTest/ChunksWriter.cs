@@ -37,7 +37,7 @@ namespace GZipTest
                         chunk = found;
                         unorderedChunks.Remove(found);
                     }
-                    
+
                     WriteChunk(outputStream, chunk, writeChunksLengths);
                     index++;
                     while ((chunk = unorderedChunks.FirstOrDefault(c => c.Index == index)) != null)
@@ -53,10 +53,15 @@ namespace GZipTest
                     {
                         WriteChunk(outputStream, chunk, writeChunksLengths);
                     }
-                    
+
                     _logger.Write("Writing complete");
                     outputStream.Flush();
                     break;
+                }
+                catch (Exception e)
+                {
+                    _logger.WriteError("Writer failed with error: " + e.Message);
+                    throw;
                 }
             }
         }

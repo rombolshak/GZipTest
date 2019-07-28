@@ -13,6 +13,8 @@ namespace GZipTest
             _timer.Start();
         }
         
+        public bool IsErrorOccured { get; private set; }
+        
         public static Task StartInParallel(Action[] actions, ILogger logger)
         {
             var task = new Task(logger);
@@ -22,8 +24,19 @@ namespace GZipTest
                 var handle = new EventWaitHandle(false, EventResetMode.ManualReset);
                 var thread = new Thread(() =>
                 {
-                    action();
-                    handle.Set();
+                    try
+                    {
+                        action();
+                    }
+                    catch (Exception e)
+                    {
+                        logger.WriteError(e.Message);
+                        task.IsErrorOccured = true;
+                    }
+                    finally
+                    {
+                        handle.Set();
+                    }
                 });
                 
                 handlesList.Add(handle);
@@ -38,6 +51,7 @@ namespace GZipTest
         {
             WaitHandle.WaitAll(_waitHandles);
             _timer.Stop();
+            _logger.Write("");
             _logger.Write($"Task finished in {_timer.Elapsed}");
         }
         

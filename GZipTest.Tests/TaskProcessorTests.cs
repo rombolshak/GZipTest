@@ -50,7 +50,29 @@ namespace GZipTest.Tests
             task.Wait();
             
             Assert.True(File.Exists(decompressedTxt));
+            Assert.False(task.IsErrorOccured);
             Assert.Equal(text, File.ReadAllText(decompressedTxt));
+        }
+
+        [Fact]
+        public void TestErrorOnDecompress()
+        {
+            const string text = "Test test test, ho ho ho";
+            const string compressedTxt = "compressed.gz";
+            const string decompressedTxt = "decompressed.txt";
+            File.WriteAllText("in.txt", text);
+            var parameters = new TaskParameters(ProcessorMode.Compress, "in.txt", compressedTxt);
+            var processor = new TaskProcessor(new LoggerMock());
+            var task = processor.Start(parameters);
+            task.Wait();
+            
+            File.AppendAllText(compressedTxt, "a0b4");
+            
+            parameters = new TaskParameters(ProcessorMode.Decompress, compressedTxt, decompressedTxt);
+            task = processor.Start(parameters);
+            task.Wait();
+            
+            Assert.True(task.IsErrorOccured);
         }
     }
 }

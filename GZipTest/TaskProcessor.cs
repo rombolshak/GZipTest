@@ -18,8 +18,8 @@ namespace GZipTest
             
             var inputFile = File.OpenRead(parameters.SourceFullPath);
             var outputFile = File.Create(parameters.DestinationFullPath);
-            var inputPipe = new Pipe(parameters.MaxElementsInPipe, _logger);
-            var outputPipe = new Pipe(parameters.MaxElementsInPipe, _logger);
+            var inputPipe = new Pipe(parameters.MaxElementsInPipe);
+            var outputPipe = new Pipe(parameters.MaxElementsInPipe);
             
             var writer = new ChunksWriter(outputPipe, _logger);
             IChunksReader reader = null;

@@ -17,10 +17,18 @@ namespace GZipTest
             }
             
             var taskProcessor = new TaskProcessor(logger);
-            var task = taskProcessor.Start(validationResult.TaskParameters);
-            task.Wait();
-            
-            return 0;
+            try
+            {
+                var task = taskProcessor.Start(validationResult.TaskParameters);
+                task.Wait();
+                logger.Write("Execution finished " + (task.IsErrorOccured ? "with errors" : "successfully"));
+                return task.IsErrorOccured ? 1 : 0;
+            }
+            catch (Exception e)
+            {
+                logger.Write(e.Message);
+                return 1;
+            }
         }
     }
 }

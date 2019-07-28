@@ -18,17 +18,28 @@ namespace GZipTest
             var buffer = new byte[_chunkSize];
             var index = 0;
             int bytesRead;
-            while ((bytesRead = inputStream.Read(buffer, 0, _chunkSize)) > 0)
-            {
-                var chunkBytes = new byte[bytesRead];
-                Buffer.BlockCopy(buffer, 0, chunkBytes, 0, bytesRead);
-                _pipe.Write(new Chunk { Bytes = chunkBytes, Index = index });
-                _logger.Write($"Read chunk #{index}");
-                index++;
-            }
 
-            _logger.Write("Reading complete");
-            _pipe.Close();
+            try
+            {
+                while ((bytesRead = inputStream.Read(buffer, 0, _chunkSize)) > 0)
+                {
+                    var chunkBytes = new byte[bytesRead];
+                    Buffer.BlockCopy(buffer, 0, chunkBytes, 0, bytesRead);
+                    _pipe.Write(new Chunk { Bytes = chunkBytes, Index = index });
+                    _logger.Write($"Read chunk #{index}");
+                    index++;
+                }
+
+                _logger.Write("Reading complete");
+                _pipe.Close();
+            }
+            catch (Exception e)
+            {
+                _logger.WriteError("Reading failed with error: " + e.Message);
+                _pipe.Close();
+                throw;
+            }
+            
         }
         
         private readonly IPipe _pipe;

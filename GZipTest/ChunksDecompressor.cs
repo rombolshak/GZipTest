@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.IO.Compression;
 
@@ -38,6 +39,12 @@ namespace GZipTest
                     _logger.Write("Decompressing complete");
                     _outputPipe.Close();
                     break;
+                }
+                catch (Exception e)
+                {
+                    _logger.WriteError("Decompressing failed with error: " + e.Message);
+                    _outputPipe.Close();
+                    throw;
                 }
             }
         }

@@ -20,40 +20,50 @@ namespace GZipTest
             var maxChunkLength = 0;
             var index = 0;
             int bytesRead;
-            while ((bytesRead = inputStream.Read(lengthBuffer, 0, lengthBuffer.Length)) > 0)
+
+            try
             {
-                if (bytesRead < lengthBuffer.Length)
+                while ((bytesRead = inputStream.Read(lengthBuffer, 0, lengthBuffer.Length)) > 0)
                 {
-                    throw new FileCorruptedException();
-                }
-                
-                var chunkLength = BitConverter.ToInt32(lengthBuffer, 0);
-                if (chunkLength < 0 || chunkLength > _chunkSize * 10)
-                {
-                    throw new FileCorruptedException();
-                }
-                
-                if (chunkLength > maxChunkLength)
-                {
-                    _logger.Write($"Increasing reading buffer to {chunkLength}");
-                    maxChunkLength = chunkLength;
-                    buffer = new byte[maxChunkLength];
+                    if (bytesRead < lengthBuffer.Length)
+                    {
+                        throw new FileCorruptedException();
+                    }
+
+                    var chunkLength = BitConverter.ToInt32(lengthBuffer, 0);
+                    if (chunkLength < 0 || chunkLength > _chunkSize * 10)
+                    {
+                        throw new FileCorruptedException();
+                    }
+
+                    if (chunkLength > maxChunkLength)
+                    {
+                        _logger.Write($"Increasing reading buffer to {chunkLength}");
+                        maxChunkLength = chunkLength;
+                        buffer = new byte[maxChunkLength];
+                    }
+
+                    bytesRead = inputStream.Read(buffer, 0, chunkLength);
+                    if (bytesRead != chunkLength)
+                    {
+                        throw new FileCorruptedException();
+                    }
+
+                    var chunkBytes = new byte[chunkLength];
+                    Buffer.BlockCopy(buffer, 0, chunkBytes, 0, bytesRead);
+                    _pipe.Write(new Chunk { Bytes = chunkBytes, Index = index });
+                    _logger.Write($"Read compressed chunk #{index} of {chunkLength} bytes");
+                    index++;
                 }
 
-                bytesRead = inputStream.Read(buffer, 0, chunkLength);
-                if (bytesRead != chunkLength)
-                {
-                    throw new FileCorruptedException();
-                }
-                
-                var chunkBytes = new byte[chunkLength];
-                Buffer.BlockCopy(buffer, 0, chunkBytes, 0, bytesRead);
-                _pipe.Write(new Chunk { Bytes = chunkBytes, Index = index });
-                _logger.Write($"Read compressed chunk #{index} of {chunkLength} bytes");
-                index++;
+                _pipe.Close();
             }
-
-            _pipe.Close();
+            catch (Exception e)
+            {
+                _logger.WriteError("Archive reading failed with error: " + e.Message);
+                _pipe.Close();
+                throw;
+            }
         }
         
         private readonly IPipe _pipe;
