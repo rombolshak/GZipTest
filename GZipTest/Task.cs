@@ -32,7 +32,7 @@ namespace GZipTest
                     {
                         action();
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         task.Abort();
                     }
