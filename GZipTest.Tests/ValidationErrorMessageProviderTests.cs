@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using GZipTest.ArgumentsValidation;
 using Xunit;
 
 namespace GZipTest.Tests

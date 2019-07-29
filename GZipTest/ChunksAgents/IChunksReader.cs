@@ -1,7 +1,7 @@
 using System.IO;
 using System.Threading;
 
-namespace GZipTest
+namespace GZipTest.ChunksAgents
 {
     public interface IChunksReader
     {

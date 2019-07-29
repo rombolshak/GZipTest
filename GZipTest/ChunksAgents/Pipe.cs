@@ -1,4 +1,4 @@
-namespace GZipTest
+namespace GZipTest.ChunksAgents
 {
     public class Pipe : GuardedPipe<SemaphoreSlimAdapter>
     {

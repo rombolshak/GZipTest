@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Threading;
 
-namespace GZipTest
+namespace GZipTest.ChunksAgents
 {
     public class GuardedPipe<T>: IPipe where T: ISemaphore
     {

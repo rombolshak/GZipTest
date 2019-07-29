@@ -1,6 +1,6 @@
 using System.Threading;
 
-namespace GZipTest
+namespace GZipTest.ChunksAgents
 {
     public class SemaphoreSlimAdapter : ISemaphore
     {

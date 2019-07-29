@@ -1,4 +1,4 @@
-namespace GZipTest
+namespace GZipTest.ArgumentsValidation
 {
     public enum ValidationError
     {

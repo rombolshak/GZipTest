@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 
-namespace GZipTest
+namespace GZipTest.ChunksAgents
 {
     public class ChunksWriter
     {

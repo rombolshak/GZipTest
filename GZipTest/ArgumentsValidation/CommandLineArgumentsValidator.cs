@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Security;
 
-namespace GZipTest
+namespace GZipTest.ArgumentsValidation
 {
     public class CommandLineArgumentsValidator
     {

@@ -1,6 +1,6 @@
 using System;
 
-namespace GZipTest
+namespace GZipTest.ArgumentsValidation
 {
     public static class ValidationErrorMessageProvider
     {

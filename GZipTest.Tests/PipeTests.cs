@@ -1,4 +1,5 @@
 using System.Threading;
+using GZipTest.ChunksAgents;
 using Xunit;
 
 namespace GZipTest.Tests

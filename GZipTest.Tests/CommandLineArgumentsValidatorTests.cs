@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Threading;
+using GZipTest.ArgumentsValidation;
 using Xunit;
 
 namespace GZipTest.Tests

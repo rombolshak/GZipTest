@@ -1,6 +1,6 @@
 using System;
 
-namespace GZipTest
+namespace GZipTest.ChunksAgents
 {
     public class FileCorruptedException : Exception
     {

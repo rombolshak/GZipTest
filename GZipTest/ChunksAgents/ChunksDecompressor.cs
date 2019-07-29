@@ -3,17 +3,17 @@ using System.IO;
 using System.IO.Compression;
 using System.Threading;
 
-namespace GZipTest
+namespace GZipTest.ChunksAgents
 {
-    public class ChunksCompressor : IChunksProcessor
+    public class ChunksDecompressor : IChunksProcessor
     {
-        public ChunksCompressor(IPipe inputPipe, IPipe outputPipe, ILogger logger)
+        public ChunksDecompressor(IPipe inputPipe, IPipe outputPipe, ILogger logger)
         {
             _inputPipe = inputPipe;
             _outputPipe = outputPipe;
             _logger = logger;
         }
-        
+
         public void Start(CancellationToken token)
         {
             _outputPipe.Open();
@@ -23,9 +23,9 @@ namespace GZipTest
                 try
                 {
                     var chunk = _inputPipe.Read(token);
-                    using (var gzipStream = new GZipStream(processedStream, CompressionMode.Compress, leaveOpen: true))
+                    using (var gzipStream = new GZipStream(new MemoryStream(chunk.Bytes), CompressionMode.Decompress))
                     {
-                        gzipStream.Write(chunk.Bytes, 0, chunk.Bytes.Length);
+                        gzipStream.CopyTo(processedStream);
                     }
 
                     var processedBytes = processedStream.ToArray();
@@ -33,16 +33,16 @@ namespace GZipTest
                     processedStream.Position = 0;
                     processedStream.SetLength(0);
                     _logger.Write(
-                        $"Compressed chunk #{chunk.Index} from {chunk.Bytes.Length} bytes to {processedBytes.Length}");
+                        $"Decompressed chunk #{chunk.Index} from {chunk.Bytes.Length} bytes to {processedBytes.Length}");
                 }
                 catch (PipeClosedException)
                 {
-                    _logger.Write("Compressing complete");
+                    _logger.Write("Decompressing complete");
                     break;
                 }
                 catch (Exception e)
                 {
-                    _logger.WriteError("Compressing failed with error: " + e.Message);
+                    _logger.WriteError("Decompressing failed with error: " + e.Message);
                     _outputPipe.Close();
                     throw;
                 }
